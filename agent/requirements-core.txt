@@ -1,0 +1,21 @@
+# Direct dependencies — pinned to the exact versions proven working in the
+# currently running langchain-agent container (captured via `pip freeze`).
+# Unpinned deps let pip re-resolve against newer upstream releases on every
+# rebuild, which is what broke the build (fastapi/uvicorn/chromadb drifted
+# past what's compatible with each other's watchfiles/starlette requirements).
+#
+# Split across requirements-core.txt / -heavy.txt / -transitive-*.txt / -ml.txt
+# (see Dockerfile) purely so a mid-download network failure only costs a
+# retry of one small `pip install` step instead of the whole dependency set —
+# every version here is pinned exactly, so which file a package lives in has
+# no effect on what gets installed. Regenerate all of these together from
+# `pip freeze` inside the container after any intentional upgrade.
+fastapi==0.138.0
+uvicorn==0.49.0
+langchain==1.3.11
+langchain-ollama==1.1.0
+langchain-core==1.4.8
+langgraph==1.2.6
+requests==2.34.2
+python-dotenv==1.2.2
+pymysql==1.2.0

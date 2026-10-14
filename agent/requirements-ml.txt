@@ -1,0 +1,21 @@
+# torch + sentence-transformers: for the isp_knowledge_extended_v2 multilingual
+# embedding experiment ONLY (search_extended_knowledge_v2). Not needed by
+# anything else. Installed as its own pip step (see Dockerfile) so a slow
+# or unreachable --extra-index-url doesn't abort the other install steps.
+#
+# --extra-index-url below forces the CPU-only torch wheel. This container has
+# no GPU passthrough (only the separate `ollama` service does in
+# docker-compose.yml), so the default PyPI torch wheel — which pulls the full
+# CUDA/cuDNN stack, multiple GB of unusable libraries — would be pure waste.
+# PyTorch's CPU-only wheels carry a "+cpu" local version segment, which PEP 440
+# treats as newer than the bare version, so once this index is available pip
+# prefers it automatically even without pinning the exact "+cpu" version
+# string.
+# Pinned to the versions pip itself already resolved from this index/spec
+# during an earlier successful build (was left unpinned only for the very
+# first build so `pip freeze` could capture them). Pinning also lets the
+# resumable-download fallback in pip-install-retry.sh look up an exact
+# version instead of needing to replicate pip's own resolution.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.13.0+cpu
+sentence-transformers==5.6.1

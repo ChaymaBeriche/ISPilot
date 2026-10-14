@@ -1,0 +1,18 @@
+# Fully local voice channel: faster-whisper for STT (CTranslate2 backend,
+# not PyTorch — no multi-GB torch/CUDA download), piper-tts for TTS
+# (ONNX-based via onnxruntime). Installed as its own pip step (see
+# Dockerfile) so it can't disturb the pinned versions requirements.txt and
+# requirements-ml.txt rely on.
+#
+# Neither package needs its own onnxruntime pin here: chromadb already
+# forces onnxruntime==1.27.0 in requirements-heavy.txt, and both
+# faster-whisper (onnxruntime<2,>=1.14) and piper-tts (onnxruntime<2,>=1)
+# accept that version, so pip installs against the already-satisfied
+# constraint instead of pulling a second copy.
+faster-whisper==1.2.1
+piper-tts==1.6.0
+
+# Required by FastAPI's UploadFile (used by /transcribe) to parse
+# multipart/form-data request bodies — not needed anywhere else in this app,
+# so not part of requirements-core.txt.
+python-multipart==0.0.20

@@ -1,0 +1,10 @@
+# Transitive dependencies, group 4/4 — see requirements-transitive-1.txt.
+urllib3==2.7.0
+uuid_utils==0.16.2
+uvloop==0.22.1
+watchfiles==1.2.0
+websocket-client==1.9.0
+websockets==15.0.1
+xxhash==3.7.1
+yarl==1.24.2
+zstandard==0.25.0

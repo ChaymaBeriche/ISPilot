@@ -1,0 +1,6 @@
+{
+  "mongodb-connection-url": "mongodb://mongodb/genieacs",
+  "cwmp-port": 7547,
+  "nbi-port": 7557,
+  "ui-port": 3000
+}

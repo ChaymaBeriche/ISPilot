@@ -1,0 +1,13 @@
+# Large wheels (multi-MB downloads), isolated into their own pip step so a
+# mid-stream network failure on one big file doesn't force re-downloading a
+# whole batch of small packages too. See requirements-core.txt for the
+# rationale behind the split.
+#
+# Order matters: chromadb depends on kubernetes and onnxruntime, so they're
+# listed first — otherwise chromadb's install pulls them in as an
+# unprotected, unpinned transitive download instead of via our own
+# retry+resume-protected line for the exact pinned version.
+kubernetes==36.0.2
+onnxruntime==1.27.0
+mysql-connector-python==9.7.0
+chromadb==1.5.9

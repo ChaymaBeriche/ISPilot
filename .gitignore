@@ -1,0 +1,33 @@
+# Secrets and local config
+.env
+*.env.local
+*.pem
+*.key
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Runtime data and logs
+logs/*
+!logs/.gitkeep
+*.log
+
+# Models and caches (downloaded at runtime)
+models/
+*.onnx
+*.gguf
+*.safetensors
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local scratch
+_cleanup_candidates/
+results*.json

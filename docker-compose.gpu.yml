@@ -1,0 +1,6 @@
+# Optional override: run Ollama on an NVIDIA GPU (requires the NVIDIA container toolkit).
+services:
+  ollama:
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all

@@ -1,0 +1,181 @@
+# ISPilot demo stack. Everything runs locally on synthetic data - no external services.
+# Secrets come from .env (copy .env.example to .env first). Published ports are
+# bound to 127.0.0.1 so the demo is not exposed to your network.
+
+services:
+
+  mongodb:
+    image: mongo:4.4
+    container_name: mongodb
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks: [labnet]
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  genieacs:
+    image: drumsergio/genieacs:latest
+    container_name: genieacs1
+    restart: unless-stopped
+    environment:
+      - GENIEACS_UI_JWT_SECRET=${GENIEACS_UI_JWT_SECRET:?set GENIEACS_UI_JWT_SECRET in .env}
+    volumes:
+      - ./genieacs/genieacs.env:/opt/genieacs/genieacs.env
+      - ./genieacs/genieacs-supervisor.conf:/etc/supervisor/conf.d/genieacs.conf
+      - ./genieacs/config.json:/opt/genieacs/config/config.json
+    ports:
+      - "127.0.0.1:7547:7547"
+      - "127.0.0.1:7557:7557"
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:7567:7567"
+    depends_on: [mongodb]
+    networks: [labnet]
+
+  radius-mysql:
+    image: mysql:8.0
+    container_name: radius-mysql
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      - MYSQL_DATABASE=${MYSQL_DB:-radius}
+      - MYSQL_USER=${MYSQL_USER:-radius}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./mysql/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    ports:
+      - "127.0.0.1:3306:3306"
+    networks: [labnet]
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  freeradius:
+    build: ./freeradius
+    container_name: freeradius
+    restart: unless-stopped
+    environment:
+      - MYSQL_USER=${MYSQL_USER:-radius}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
+      - RADIUS_CLIENT_SECRET=${RADIUS_CLIENT_SECRET:?set RADIUS_CLIENT_SECRET in .env}
+    ports:
+      - "127.0.0.1:1812:1812/udp"
+      - "127.0.0.1:1813:1813/udp"
+    depends_on:
+      radius-mysql:
+        condition: service_healthy
+    networks: [labnet]
+
+  tr069-simulator:
+    build: ./simulator
+    container_name: tr069-simulator
+    restart: unless-stopped
+    depends_on: [genieacs]
+    environment:
+      - ACS_URL=http://genieacs1:7547
+      - NUM_DEVICES=25
+    networks: [labnet]
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: unless-stopped
+    environment:
+      - PMA_HOST=radius-mysql
+      - PMA_PORT=3306
+      - PMA_USER=${MYSQL_USER:-radius}
+      - PMA_PASSWORD=${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on: [radius-mysql]
+    networks: [labnet]
+
+  langchain-agent:
+    build: ./agent
+    container_name: langchain-agent
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:14b}
+      - GENIEACS_URL=http://genieacs1:7557
+      - MYSQL_HOST=radius-mysql
+      - MYSQL_USER=${MYSQL_USER:-radius}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
+      - MYSQL_DB=${MYSQL_DB:-radius}
+      - LOG_DIR=/app/logs/conversations
+    volumes:
+      - ./logs:/app/logs
+      - chroma_cache:/root/.cache/chroma
+      - hf_cache:/root/.cache/huggingface        # embedding model download cache
+      - whisper_cache:/root/.cache/whisper       # faster-whisper (STT) model cache
+      - piper_voices:/root/.cache/piper          # Piper (TTS) voice cache
+    depends_on:
+      radius-mysql:
+        condition: service_healthy
+      genieacs:
+        condition: service_started
+      ollama:
+        condition: service_started
+      chromadb:
+        condition: service_started
+    networks: [labnet]
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks: [labnet]
+    # CPU works but is slow. For NVIDIA GPUs add the override file:
+    #   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8001:8000"
+    volumes:
+      - chroma_data:/data
+    environment:
+      - CHROMA_SERVER_HOST=0.0.0.0
+      - CHROMA_SERVER_HTTP_PORT=8000
+      - ANONYMIZED_TELEMETRY=False
+    networks: [labnet]
+
+  streamlit-ui:
+    build: ./ui
+    container_name: streamlit-ui
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8501:8501"
+    environment:
+      - AGENT_URL=http://langchain-agent:8000
+    depends_on: [langchain-agent]
+    networks: [labnet]
+
+networks:
+  labnet:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  mysql_data:
+  ollama_data:
+  chroma_data:
+  chroma_cache:
+  hf_cache:
+  whisper_cache:
+  piper_voices:

@@ -1,0 +1,32 @@
+# Transitive dependencies, group 1/4 — pinned to the same known-working
+# combination so pip never has to re-resolve (and potentially re-break) this
+# graph again. See requirements-core.txt for why these are split into
+# multiple files. Regenerate from `pip freeze` inside the container after
+# any intentional upgrade of a direct dependency.
+aiohappyeyeballs==2.6.2
+aiohttp==3.14.1
+aiosignal==1.4.0
+annotated-doc==0.0.4
+annotated-types==0.7.0
+anyio==4.14.0
+attrs==26.1.0
+bcrypt==5.0.0
+build==1.5.0
+certifi==2026.6.17
+charset-normalizer==3.4.7
+click==8.4.2
+distro==1.9.0
+durationpy==0.10
+filelock==3.29.4
+flatbuffers==25.12.19
+frozenlist==1.8.0
+fsspec==2026.6.0
+googleapis-common-protos==1.75.0
+grpcio==1.81.1
+h11==0.16.0
+hf-xet==1.5.1
+httpcore==1.0.9
+httptools==0.8.0
+httpx==0.28.1
+huggingface_hub==1.20.1
+idna==3.18

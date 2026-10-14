@@ -1,0 +1,4 @@
+# Bumped from 1.39.0 -> 1.40.0: st.audio_input (mic recording widget) was
+# experimental-only in 1.39.0 and reached general availability in 1.40.0.
+streamlit==1.40.0
+requests==2.32.3

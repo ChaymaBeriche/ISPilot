@@ -1,0 +1,4 @@
+# Only needed by evaluate_retrieval.py (offline retrieval-quality report,
+# not imported by the running service) — kept out of requirements-core.txt
+# so the app image doesn't carry a plotting stack it never uses at runtime.
+matplotlib==3.11.1

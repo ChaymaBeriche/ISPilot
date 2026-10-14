@@ -1,0 +1,29 @@
+# Transitive dependencies, group 2/4 — see requirements-transitive-1.txt.
+# Note: kubernetes and onnxruntime moved to requirements-heavy.txt (large
+# wheels), not omitted.
+importlib_resources==7.1.0
+jsonpatch==1.33
+jsonpointer==3.1.1
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+langchain-protocol==0.0.18
+langgraph-checkpoint==4.1.1
+langgraph-prebuilt==1.1.0
+langgraph-sdk==0.4.2
+langsmith==0.9.1
+markdown-it-py==4.2.0
+mdurl==0.1.2
+mmh3==5.2.1
+multidict==6.7.1
+numpy==2.4.6
+oauthlib==3.3.1
+ollama==0.6.2
+opentelemetry-api==1.43.0
+opentelemetry-exporter-otlp-proto-common==1.43.0
+opentelemetry-exporter-otlp-proto-grpc==1.43.0
+opentelemetry-proto==1.43.0
+opentelemetry-sdk==1.43.0
+opentelemetry-semantic-conventions==0.64b0
+orjson==3.11.9
+ormsgpack==1.12.2
+overrides==7.7.0

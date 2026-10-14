@@ -1,0 +1,2 @@
+# Intentionally empty: subscribers live in MySQL (radcheck / radusergroup), see mysql/seed.sql.
+# No static credentials are kept in this file.

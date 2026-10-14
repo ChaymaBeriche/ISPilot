@@ -1,0 +1,184 @@
+[
+  {
+    "id": "mock_offers_catalog_001",
+    "content": "[ISP Offers Catalog -- 5 pricing tiers]\n(MOCKED DATA for demonstration -- in production this would be sourced from the ISP's real, live billing/CRM system, not hardcoded)\n\n1. ADSL Essential\n   - Technology: ADSL2+\n   - Speed: up to 8 Mbps down / 1 Mbps up\n   - Price: 29 TND/month\n   - Commitment: 12 months\n   - Includes: basic WiFi router (802.11n), 1 static email address\n\n2. ADSL Confort\n   - Technology: ADSL2+\n   - Speed: up to 20 Mbps down / 1 Mbps up\n   - Price: 45 TND/month\n   - Commitment: 12 months\n   - Includes: dual-band WiFi router (802.11ac), 2 static email addresses\n\n3. Fibre Start\n   - Technology: FTTH (Fiber)\n   - Speed: up to 100 Mbps down / 50 Mbps up\n   - Price: 69 TND/month\n   - Commitment: 24 months\n   - Includes: WiFi 6 router, free ONT installation, 3 static email addresses\n\n4. Fibre Premium\n   - Technology: FTTH (Fiber)\n   - Speed: up to 500 Mbps down / 250 Mbps up\n   - Price: 99 TND/month\n   - Commitment: 24 months\n   - Includes: WiFi 6 router, free ONT installation, static public IP option (+10 TND/month), priority support line\n\n5. Fibre Ultra\n   - Technology: FTTH (Fiber)\n   - Speed: up to 1 Gbps down / 500 Mbps up\n   - Price: 149 TND/month\n   - Commitment: 24 months\n   - Includes: WiFi 6E router, free ONT installation, static public IP included, priority support line, free router upgrade every 2 years\n\nAll prices exclude VAT. Promotional first-3-months discounts may apply depending on active campaigns -- confirm current promotions before quoting a customer.",
+    "metadata": {
+      "category": "plan_upgrade",
+      "type": "mocked_data",
+      "priority_threshold": "low",
+      "tools_to_use": "check_customer_plan,check_upgrade_eligibility",
+      "source": "Mocked ISP Offers Catalog (synthetic -- for demonstration only)",
+      "source_url": "N/A - synthetic data",
+      "section": "Full pricing tier catalog",
+      "date": "2026-01-01"
+    }
+  },
+  {
+    "id": "mock_plan_upgrade_process_002",
+    "content": "[Plan Upgrade Process]\n(MOCKED DATA for demonstration)\n\nWhen a customer requests a plan upgrade (e.g. ADSL Confort -> Fibre Start):\n\n1. Check eligibility: verify fiber coverage is available at the customer's address (not all addresses have FTTH coverage yet). If only ADSL is available, offer the best available ADSL tier instead.\n2. Check current contract commitment: if the customer is still within their minimum commitment period, an upgrade is generally still allowed (upgrades don't trigger early-termination fees, only downgrades or cancellations do).\n3. If upgrading within the same technology (e.g. ADSL Essential -> ADSL Confort): the change can usually be applied remotely via RADIUS profile update (Framed-Filter-Id / Service-Type change) at the next re-authentication, no technician visit needed.\n4. If upgrading between technologies (ADSL -> Fiber): a technician visit is required to install the ONT (Optical Network Terminal) and run fiber to the premises. Schedule this before confirming the upgrade to the customer.\n5. Billing: the new price applies from the next billing cycle; the current cycle is typically prorated based on the days remaining.\n6. Confirm the new commitment period with the customer before finalizing -- fiber plans generally require a fresh 24-month commitment even if the customer's previous ADSL commitment had already been fulfilled.",
+    "metadata": {
+      "category": "plan_upgrade",
+      "type": "mocked_data",
+      "priority_threshold": "low",
+      "tools_to_use": "check_customer_plan,check_upgrade_eligibility,schedule_technician,update_radius_profile",
+      "source": "Mocked ISP Internal Process Guide (synthetic -- for demonstration only)",
+      "source_url": "N/A - synthetic data",
+      "section": "Plan upgrade procedure",
+      "date": "2026-01-01"
+    }
+  },
+  {
+    "id": "mock_account_suspended_reasons_003",
+    "content": "[Account Suspension - Non-payment]\n(MOCKED DATA for demonstration)\n\nWhy accounts get suspended for non-payment:\n- Invoice due date passes with no payment recorded.\n- A grace period of 7 days is applied after the due date before any suspension action.\n- If payment is still not received after the 7-day grace period, the account is automatically suspended: RADIUS profile is updated so the next PPPoE authentication attempt returns Access-Reject with a Reply-Message indicating suspension for non-payment, rather than a normal credential failure.\n- The customer's line will physically still show DSL sync (Layer 1 unaffected), but PPPoE authentication will fail every time -- this is an important diagnostic distinction from a technical PPPoE auth failure: same symptom (can't connect), different root cause (billing, not RADIUS/line fault).\n- If unpaid for 30+ days total, the account moves to a second-stage \"pending termination\" status and the customer is notified again before eventual service cancellation.",
+    "metadata": {
+      "category": "account_suspended",
+      "type": "mocked_data",
+      "priority_threshold": "high",
+      "tools_to_use": "check_billing_status,check_radius_reject_reason",
+      "source": "Mocked ISP Billing Policy (synthetic -- for demonstration only)",
+      "source_url": "N/A - synthetic data",
+      "section": "Non-payment suspension triggers",
+      "date": "2026-01-01"
+    }
+  },
+  {
+    "id": "mock_account_reactivation_004",
+    "content": "[Account Reactivation After Non-payment Suspension]\n(MOCKED DATA for demonstration)\n\nSteps to reactivate a suspended account:\n1. Confirm the outstanding balance with the customer (query the billing system for the exact amount due, including any late fee).\n2. Customer pays via the available channels: online payment portal, in-store, or bank transfer.\n3. Once payment is confirmed in the billing system, the RADIUS profile is automatically reverted from \"suspended\" back to \"active\" status.\n4. Reactivation is typically immediate to within 15 minutes -- if the customer's router auto-retries PPPoE periodically, no manual action is needed on their end. If not, advise the customer to power-cycle their router/modem to force a new PPPoE authentication attempt.\n5. If the customer disputes the suspension (claims they already paid), escalate to billing support with the payment reference/proof rather than manually reactivating -- unverified manual reactivation bypasses the billing safeguard and should not be done from the support/technical side.\n6. A late fee (typically a flat amount, e.g. 5 TND) may apply if payment was received after the 7-day grace period -- inform the customer of this if applicable.",
+    "metadata": {
+      "category": "account_suspended",
+      "type": "mocked_data",
+      "priority_threshold": "high",
+      "tools_to_use": "check_billing_status,process_payment_confirmation,reactivate_radius_profile",
+      "source": "Mocked ISP Billing Policy (synthetic -- for demonstration only)",
+      "source_url": "N/A - synthetic data",
+      "section": "Reactivation procedure",
+      "date": "2026-01-01"
+    }
+  },
+  {
+    "id": "mock_install_paperwork_005",
+    "content": "[Modem Installation - Administrative/Paperwork Procedure]\n(MOCKED DATA for demonstration)\n\nBefore any physical installation, the following administrative steps apply:\n1. Identity verification: customer must present a valid national ID (CIN) matching the name on the subscription contract.\n2. Address verification: proof of residence (utility bill or lease agreement) less than 3 months old, confirming the installation address.\n3. Contract signing: the customer signs the subscription agreement specifying the chosen plan, commitment period, and monthly price. A copy is provided to the customer (paper or digital).\n4. Technician appointment scheduling: an installation window is booked (typically a half-day slot, morning or afternoon) within 3-5 business days of contract signing, depending on technology (ADSL is usually faster than Fiber, since Fiber may require external cable pulling).\n5. Equipment handover: the customer receives and signs an equipment receipt for the modem/router (and ONT, for fiber) -- this documents that the equipment remains the ISP's property and must be returned if the contract ends.\n6. Post-installation: the technician has the customer sign a completion form confirming the service was installed and tested successfully before leaving.",
+    "metadata": {
+      "category": "modem_installation",
+      "type": "mocked_data",
+      "priority_threshold": "low",
+      "tools_to_use": "schedule_technician,generate_contract,generate_equipment_receipt",
+      "source": "Mocked ISP Installation Procedure (synthetic -- for demonstration only)",
+      "source_url": "N/A - synthetic data",
+      "section": "Administrative/paperwork procedure",
+      "date": "2026-01-01"
+    }
+  },
+  {
+    "id": "mock_install_physical_006",
+    "content": "[Modem Installation - Physical Setup Steps (ADSL)]\n(MOCKED DATA for demonstration)\n\n1. Locate the telephone wall socket (RJ11) that will be used for the ADSL line.\n2. Connect a microfilter/splitter to the wall socket -- this separates the voice (POTS) signal from the ADSL data signal, and is REQUIRED on every phone extension in the home that has a telephone plugged in, not just the modem's line, to avoid noise on the DSL signal.\n3. Connect the modem's DSL/line port to the microfilter's \"DSL\" or \"Modem\" output using the supplied phone cable.\n4. Connect the modem to a power outlet and power it on.\n5. Wait for the DSL/Line LED to turn solid (not blinking) -- this indicates successful Layer 1 synchronization with the DSLAM. This can take 30 seconds to a few minutes; if it stays blinking for more than 5 minutes, check the microfilter and cabling before escalating to a line issue.\n6. Connect a computer to the modem via Ethernet cable (recommended for initial setup) or WiFi using the default SSID/password printed on the modem's label.\n7. Access the modem's web configuration page (typically 192.168.1.1) and enter the PPPoE username/password provided in the customer's welcome documentation.\n8. Confirm the Internet/PPPoE LED turns solid, indicating successful PPPoE authentication.\n9. For WiFi: change the default SSID and password to something the customer chooses, for security -- do not leave factory defaults active.",
+    "metadata": {
+      "category": "modem_installation",
+      "type": "mocked_data",
+      "priority_threshold": "low",
+      "tools_to_use": "check_pppoe_credentials,check_dsl_sync_status",
+      "source": "Mocked ISP Installation Procedure (synthetic -- for demonstration only)",
+      "source_url": "N/A - synthetic data",
+      "section": "Physical setup steps (ADSL)",
+      "date": "2026-01-01"
+    }
+  },
+  {
+    "id": "mock_install_wifi_tips_007",
+    "content": "[Modem Installation - WiFi Setup Best Practices]\n(MOCKED DATA for demonstration)\n\nPlacement and configuration tips to give customers during/after installation:\n- Place the router in a central, elevated location, away from walls, metal objects, and large appliances (microwaves, refrigerators) that cause interference.\n- Avoid placing the router inside a cabinet or behind the TV -- enclosed spaces block signal significantly.\n- If the home has multiple floors or is large, recommend a WiFi extender/mesh system rather than relying on a single router's range.\n- Set the 2.4GHz band to channel 1, 6, or 11 (these don't overlap with each other) if the customer reports interference from neighboring networks.\n- Use the 5GHz band for devices near the router that need higher speed (e.g. streaming devices, gaming consoles); use 2.4GHz for devices farther away or needing better wall penetration (e.g. smart home sensors).\n- Set a strong WPA2/WPA3 password rather than leaving the network open or using the default password printed on the router.",
+    "metadata": {
+      "category": "modem_installation",
+      "type": "mocked_data",
+      "priority_threshold": "low",
+      "tools_to_use": "check_wifi_channel,check_wifi_signal",
+      "source": "Mocked ISP Installation Procedure (synthetic -- for demonstration only)",
+      "source_url": "N/A - synthetic data",
+      "section": "WiFi setup and placement best practices",
+      "date": "2026-01-01"
+    }
+  },
+  {
+    "id": "original_101",
+    "content": "[RADIUS flow - summary]\nA network access server (NAS) sends an Access-Request (username plus credentials) to the RADIUS server, which answers Access-Accept, Access-Reject or Access-Challenge. Authentication traffic uses UDP port 1812 and accounting uses UDP port 1813.\nAfter a successful login the NAS sends Accounting-Start, periodic Interim-Update packets and finally Accounting-Stop, with a termination cause (for example Lost-Carrier, User-Request, Session-Timeout, Admin-Reset).\nTypical reasons for repeated Access-Reject: wrong or stale password on the customer's router, a suspended account, or a user group configured to reject.\nA session with a Start but no Stop can be a stale (zombie) session: the server believes the user is online although the line is down.\nReference specifications: RFC 2865 (authentication) and RFC 2866 (accounting).",
+    "metadata": {
+      "category": "authentication",
+      "type": "original_summary",
+      "priority_threshold": "medium",
+      "tools_to_use": "get_auth_failures,get_session_history,get_radius_user",
+      "source": "Original summary written for this project (not copied from any third-party document)",
+      "source_url": "N/A",
+      "section": "RADIUS authentication and accounting flow",
+      "date": "2026-01-01"
+    }
+  },
+  {
+    "id": "original_102",
+    "content": "[PPPoE - summary]\nA PPPoE connection has a discovery stage (PADI, PADO, PADR, PADS packets) that establishes a session, followed by PPP negotiation (LCP, authentication with PAP or CHAP, then IPCP for the IP address).\nPPPoE adds an 8-byte header, so the usable MTU on an Ethernet link is 1492 instead of 1500. If a router uses a larger MTU, small packets pass but large ones are dropped or fragmented badly.\nTypical MTU-mismatch symptom: small web pages load, but large downloads, video streams or some HTTPS sites stall or hang.\nFix: set the WAN MTU to 1492 on the router, then trigger a new connection.\nReference specification: RFC 2516.",
+    "metadata": {
+      "category": "device",
+      "type": "original_summary",
+      "priority_threshold": "medium",
+      "tools_to_use": "get_device_parameters,set_mtu,force_connection_request",
+      "source": "Original summary written for this project (not copied from any third-party document)",
+      "source_url": "N/A",
+      "section": "PPPoE sessions and MTU",
+      "date": "2026-01-01"
+    }
+  },
+  {
+    "id": "original_103",
+    "content": "[TR-069 - summary]\nTR-069 (CWMP) lets an auto-configuration server (ACS) manage customer-premises equipment over HTTP/SOAP. The router periodically sends an Inform message (with events such as BOOT, PERIODIC, VALUE CHANGE or CONNECTION REQUEST) and the ACS replies with remote procedure calls such as GetParameterValues, SetParameterValues, Reboot or FactoryReset.\nThe ACS cannot reach a router behind NAT on its own, so it sends a Connection Request to make the router open a session now instead of waiting for the next periodic Inform.\nA router that has not sent an Inform for several periodic intervals should be treated as offline.\nIn this project the ACS is GenieACS and the routers are simulated by a small TR-069 client.",
+    "metadata": {
+      "category": "device",
+      "type": "original_summary",
+      "priority_threshold": "medium",
+      "tools_to_use": "get_device,force_connection_request,reboot_device",
+      "source": "Original summary written for this project (not copied from any third-party document)",
+      "source_url": "N/A",
+      "section": "TR-069 (CWMP) basics",
+      "date": "2026-01-01"
+    }
+  },
+  {
+    "id": "original_104",
+    "content": "[DSL line quality - rule of thumb]\nSNR margin (signal-to-noise margin) is the main indicator of line stability. Common rule-of-thumb ranges: above about 10 dB is comfortable, roughly 6 to 10 dB is acceptable but fragile, below about 6 dB is unstable and often shows up as repeated resynchronisations and Lost-Carrier disconnections.\nLine attenuation grows with distance: the higher it is, the lower the achievable speed.\nExact thresholds differ between operators and equipment vendors; the project's own rules are defined in the troubleshooting guides.\nA very low SNR usually means a physical problem (line, filter, splitter, interference) that a remote reboot cannot fix, so the case should be escalated to a technician.",
+    "metadata": {
+      "category": "device",
+      "type": "original_summary",
+      "priority_threshold": "medium",
+      "tools_to_use": "get_device_parameters,create_ticket",
+      "source": "Original summary written for this project (not copied from any third-party document)",
+      "source_url": "N/A",
+      "section": "DSL line quality indicators",
+      "date": "2026-01-01"
+    }
+  },
+  {
+    "id": "original_105",
+    "content": "[Wi-Fi basics]\nOn the 2.4 GHz band only channels 1, 6 and 11 do not overlap in most regions; crowded neighbouring networks on the same channel reduce throughput. The 5 GHz band has less interference but a shorter range through walls.\nTo tell a Wi-Fi problem from a line problem, compare a wired (Ethernet) test with a Wi-Fi test: if the wired speed and latency are good and only one room or device is slow, the line is fine and the issue is Wi-Fi coverage or channel choice.\nAdvice for the customer: move closer to the router, avoid placing it near metal or microwave ovens, and try the 5 GHz band for nearby devices.",
+    "metadata": {
+      "category": "performance",
+      "type": "original_summary",
+      "priority_threshold": "medium",
+      "tools_to_use": "get_network_metrics,get_device_parameters",
+      "source": "Original summary written for this project (not copied from any third-party document)",
+      "source_url": "N/A",
+      "section": "Wi-Fi versus line problems",
+      "date": "2026-01-01"
+    }
+  },
+  {
+    "id": "original_106",
+    "content": "[Stale sessions - summary]\nA stale or zombie session happens when the accounting server keeps an open session (a Start record with no Stop) although the customer's line has dropped, for example because the Stop packet was lost.\nThe customer then cannot reconnect cleanly or appears online while having no service.\nRemediation: terminate the stale session on the server side, then ask the router to reconnect (Connection Request), and verify that a fresh session appears.",
+    "metadata": {
+      "category": "disconnection",
+      "type": "original_summary",
+      "priority_threshold": "medium",
+      "tools_to_use": "get_session_history,disconnect_session,force_connection_request",
+      "source": "Original summary written for this project (not copied from any third-party document)",
+      "source_url": "N/A",
+      "section": "Stale (zombie) sessions",
+      "date": "2026-01-01"
+    }
+  }
+]
